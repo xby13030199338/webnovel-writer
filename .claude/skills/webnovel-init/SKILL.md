@@ -238,13 +238,22 @@ Hard requirement: do not run init_project.py until all items below are known or 
 If any is missing, stop and ask only for the missing items.
 
 ### Project directory
-- project_root = 书名安全化（去非法字符，空格转 `-`；为空或以 `.` 开头则前缀 `proj-`）
+
+**询问存放位置**：在 Sufficiency check 通过后、运行 init 脚本前，询问用户：
+
+> 项目将生成在哪个目录下？（直接回车使用当前目录）
+> 示例：`/home/user/novels`、`~/写作`、`D:/novels`（留空 = 当前目录）
+
+- `project_name` = 书名安全化（去非法字符，空格转 `-`；为空或以 `.` 开头则前缀 `proj-`）
+- `parent_dir` = 用户指定目录（留空则为当前工作目录 `.`）
+- `project_dir` = `{parent_dir}/{project_name}`（传给 init_project.py 的第一个参数）
 - 禁止在 `.claude/` 下生成
+- 若指定目录不存在，init_project.py 会自动创建（`mkdir -p`）
 
 ### Run init script
 ```bash
 python "${CLAUDE_PLUGIN_ROOT}/scripts/init_project.py" \
-  "{project_root}" \
+  "{project_dir}" \
   "{title}" \
   "{genre}" \
   --protagonist-name "{protagonist_name}" \
@@ -311,9 +320,9 @@ After init, fill these fields in `大纲/总纲.md` using collected info:
 
 ### Verify
 ```bash
-Get-Item "{project_root}/.webnovel/state.json"
-Get-ChildItem "{project_root}/设定集" -Filter *.md
-Get-Item "{project_root}/大纲/总纲.md"
+Get-Item "{project_dir}/.webnovel/state.json"
+Get-ChildItem "{project_dir}/设定集" -Filter *.md
+Get-Item "{project_dir}/大纲/总纲.md"
 ```
 
 ### Final check
