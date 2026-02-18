@@ -1,7 +1,7 @@
 # 番茄爽文风格指南 (fanqie_shuangwen)
 
-> **定位**：番茄小说平台专用爽文风格，供 Step 2 写作时加载。
-> **触发条件**：`state.json → project.genre = "fanqie_shuangwen"` 或用户明确指定。
+> **定位**：番茄小说平台专用**行文风格**，与题材（genre）正交，可叠加在任意题材上使用。
+> **触发条件**：`state.json → project.writing_style = "fanqie_shuangwen"` 或用户明确指定。
 
 ---
 
