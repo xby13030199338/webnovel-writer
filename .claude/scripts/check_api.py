@@ -16,11 +16,10 @@ check_api.py - 检测 Embedding / Rerank API 可用性
 
 import os
 import sys
-import json
 import argparse
-import urllib.request
-import urllib.error
 from pathlib import Path
+
+import requests
 
 
 # ─── .env 读写 ────────────────────────────────────────────────────────────────
@@ -64,58 +63,61 @@ def save_env(env_path: Path, updates: dict):
 
 # ─── API 测试 ─────────────────────────────────────────────────────────────────
 
-def test_embed(base_url: str, api_key: str, model: str) -> tuple:
+def test_embed(base_url: str, api_key: str, model: str):
     """返回 (ok: bool, message: str)"""
     url = base_url.rstrip("/")
     if not url.endswith("/embeddings"):
         url = url + ("/embeddings" if url.endswith("/v1") else "/v1/embeddings")
 
-    payload = json.dumps({"model": model, "input": ["测试"]}).encode()
-    headers = {"Content-Type": "application/json"}
-    if api_key:
-        headers["Authorization"] = f"Bearer {api_key}"
-
-    req = urllib.request.Request(url, data=payload, headers=headers, method="POST")
+    headers = {
+        "Authorization": f"Bearer {api_key}",
+        "Content-Type": "application/json",
+    }
+    payload = {
+        "model": model,
+        "input": "这是一段需要转换成向量的文本",
+        "encoding_format": "float",
+    }
     try:
-        with urllib.request.urlopen(req, timeout=15) as resp:
-            body = json.loads(resp.read())
-            if "data" in body and body["data"]:
-                dim = len(body["data"][0].get("embedding", []))
-                return True, f"OK（向量维度 {dim}）"
-            return False, f"响应格式异常：{body}"
-    except urllib.error.HTTPError as e:
-        body = e.read().decode(errors="replace")
-        return False, f"HTTP {e.code}：{body[:200]}"
+        resp = requests.post(url, headers=headers, json=payload, timeout=60)
+        resp.raise_for_status()
+        data = resp.json()
+        if "data" in data and data["data"]:
+            dim = len(data["data"][0].get("embedding", []))
+            preview = data["data"][0]["embedding"][:5]
+            return True, f"OK（向量维度 {dim}，前5维：{preview}）"
+        return False, f"响应格式异常：{data}"
+    except requests.HTTPError as e:
+        return False, f"HTTP {e.response.status_code}：{e.response.text[:200]}"
     except Exception as e:
         return False, str(e)
 
 
-def test_rerank(base_url: str, api_key: str, model: str) -> tuple:
+def test_rerank(base_url: str, api_key: str, model: str):
     """返回 (ok: bool, message: str)"""
     url = base_url.rstrip("/")
     if not url.endswith("/rerank"):
         url = url + ("/rerank" if url.endswith("/v1") else "/v1/rerank")
 
-    payload = json.dumps({
+    headers = {
+        "Authorization": f"Bearer {api_key}",
+        "Content-Type": "application/json",
+    }
+    payload = {
         "model": model,
         "query": "测试查询",
         "documents": ["文档一", "文档二"],
         "top_n": 2,
-    }).encode()
-    headers = {"Content-Type": "application/json"}
-    if api_key:
-        headers["Authorization"] = f"Bearer {api_key}"
-
-    req = urllib.request.Request(url, data=payload, headers=headers, method="POST")
+    }
     try:
-        with urllib.request.urlopen(req, timeout=15) as resp:
-            body = json.loads(resp.read())
-            if "results" in body:
-                return True, f"OK（返回 {len(body['results'])} 条结果）"
-            return False, f"响应格式异常：{body}"
-    except urllib.error.HTTPError as e:
-        body = e.read().decode(errors="replace")
-        return False, f"HTTP {e.code}：{body[:200]}"
+        resp = requests.post(url, headers=headers, json=payload, timeout=60)
+        resp.raise_for_status()
+        data = resp.json()
+        if "results" in data:
+            return True, f"OK（返回 {len(data['results'])} 条结果）"
+        return False, f"响应格式异常：{data}"
+    except requests.HTTPError as e:
+        return False, f"HTTP {e.response.status_code}：{e.response.text[:200]}"
     except Exception as e:
         return False, str(e)
 
@@ -193,6 +195,10 @@ def run(args):
               "RERANK_BASE_URL", "RERANK_MODEL", "RERANK_API_KEY"):
         if k in os.environ:
             env_vars[k] = os.environ[k]
+
+    # OPENAI_API_KEY 作为 EMBED_API_KEY 的备用来源
+    if not env_vars.get("EMBED_API_KEY") and os.getenv("OPENAI_API_KEY"):
+        env_vars["EMBED_API_KEY"] = os.environ["OPENAI_API_KEY"]
 
     do_embed = not args.rerank_only
     do_rerank = not args.embed_only
