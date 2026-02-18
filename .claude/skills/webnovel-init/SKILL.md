@@ -8,11 +8,30 @@ description: Initializes a new webnovel project in deep mode, collecting full st
 Goal: create a writing-ready project skeleton + creative constraints. No Quick/Standard mode.
 
 ## Workflow
+0. Check API availability (Embedding + Rerank).
 1. Ask for deep setup info (story, character, world, golden finger, constraints).
 2. Run init_project.py with full parameters.
 3. Write idea_bank.json.
 4. Patch 总纲.md with the collected core info.
 5. Verify files.
+
+## Step 0: API 可用性检测
+
+在收集故事信息之前，先检测 Embedding 和 Rerank API 是否已配置。
+
+```bash
+python3 "${CLAUDE_PLUGIN_ROOT}/scripts/check_api.py" --env-file "{PROJECT_PARENT}/.env"
+```
+
+其中 `{PROJECT_PARENT}` 为小说项目将要创建的父目录（通常为当前工作目录）。
+
+**结果处理**：
+- 退出码 0：全部通过，继续 Step 1。
+- 退出码 1：脚本已交互引导用户配置并测试；无论结果如何，均继续 Step 1（API 未配置不阻断初始化，仅影响向量检索精度）。
+- 若脚本无法运行（环境问题）：跳过此步骤，在 Final check 后提示用户手动运行：
+  ```bash
+  python3 .claude/scripts/check_api.py
+  ```
 
 ## Reference Loading Levels (strict, lazy)
 
