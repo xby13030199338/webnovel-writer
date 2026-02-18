@@ -260,6 +260,7 @@ def init_project(
     sect_hierarchy: str = "",
     cultivation_chain: str = "",
     cultivation_subtiers: str = "",
+    writing_style: str = "fanqie_shuangwen",
 ) -> None:
     project_path = Path(project_dir).expanduser().resolve()
     if ".claude" in project_path.parts:
@@ -329,6 +330,7 @@ def init_project(
             "sect_hierarchy": sect_hierarchy,
             "cultivation_chain": cultivation_chain,
             "cultivation_subtiers": cultivation_subtiers,
+            "writing_style": writing_style,
         }
     )
 
@@ -761,6 +763,7 @@ def main() -> None:
     parser.add_argument("--antagonist-level", default="", help="反派等级（深度模式）")
     parser.add_argument("--target-reader", default="", help="目标读者（深度模式）")
     parser.add_argument("--platform", default="", help="发布平台（深度模式）")
+    parser.add_argument("--writing-style", default="fanqie_shuangwen", help="行文风格（默认 fanqie_shuangwen）")
 
     args = parser.parse_args()
 
@@ -800,6 +803,7 @@ def main() -> None:
         sect_hierarchy=args.sect_hierarchy,
         cultivation_chain=args.cultivation_chain,
         cultivation_subtiers=args.cultivation_subtiers,
+        writing_style=args.writing_style,
     )
 
 

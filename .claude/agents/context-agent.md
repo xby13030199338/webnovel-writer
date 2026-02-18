@@ -47,6 +47,7 @@ tools: Read, Grep, Bash
 | 上章结束情绪 | `chapter_meta[NNNN].ending.emotion` | "未知"（提示自行判断） |
 | 角色动机 | 从大纲+角色状态推断 | **必须推断，无默认值** |
 | 题材Profile | `state.json → project.genre` | 默认 "shuangwen" |
+| 行文风格 | `state.json → project_info.writing_style` | 默认 "fanqie_shuangwen" |
 | 当前债务 | `index.db → chase_debt` | 0 |
 
 **缺失处理**:
@@ -91,7 +92,7 @@ python "${CLAUDE_PLUGIN_ROOT}/scripts/extract_chapter_context.py" --chapter {NNN
 ### Step 1: 读取大纲与状态
 - 大纲：`大纲/卷N/第XXX章.md` 或 `大纲/第{卷}卷-详细大纲.md`
   - 若大纲含“反派层级”，必须提取并写入任务书
-- `state.json`：progress / protagonist_state / chapter_meta / project.genre
+- `state.json`：progress / protagonist_state / chapter_meta / project.genre / project_info.writing_style
 
 ### Step 2: 追读力与债务（按需）
 ```bash
@@ -117,6 +118,11 @@ python -m data_modules.index_manager recent-appearances --limit 20 --project-roo
 
 ### Step 5: 组装任务书
 输出 7 个板块的创作任务书。
+
+**writing_style 处理**：
+- 读取 `state.json → project_info.writing_style`（默认 `fanqie_shuangwen`）
+- 若值为 `fanqie_shuangwen`，在板块5（风格指导）末尾注明：
+  `行文风格：fanqie_shuangwen（番茄爽文）— 写作时需加载 .claude/references/writing-styles/fanqie_shuangwen.md`
 
 ---
 

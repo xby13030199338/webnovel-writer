@@ -196,7 +196,8 @@ python "${CLAUDE_PLUGIN_ROOT}/scripts/init_project.py" \
   --protagonist-archetype "{protagonist_archetype}" \
   --antagonist-level "{antagonist_level}" \
   --target-reader "{target_reader}" \
-  --platform "{platform}"
+  --platform "{platform}" \
+  --writing-style "fanqie_shuangwen"
 ```
 
 ### Write idea_bank.json
