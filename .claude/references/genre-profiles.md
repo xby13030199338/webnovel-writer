@@ -506,6 +506,52 @@ override_config:
 
 ---
 
+### 2.12 番茄爽文风 (fanqie_shuangwen)
+
+```yaml
+id: fanqie_shuangwen
+name: 番茄爽文风
+description: 强情绪+快节奏+获得感，黄金三章快速入局，爽点密集
+tags: [shuangwen, fanqie]
+
+hook_config:
+  preferred_types: [危机钩, 情绪钩, 渴望钩]
+  strength_baseline: strong
+  chapter_end_required: true
+  transition_allowance: 1
+
+coolpoint_config:
+  preferred_patterns: [装逼打脸, 扮猪吃虎, 越级反杀, 反派翻车]
+  density_per_chapter: high
+  combo_interval: 3
+  milestone_interval: 8
+
+micropayoff_config:
+  preferred_types: [能力兑现, 认可兑现, 资源兑现]
+  min_per_chapter: 2
+  transition_min: 1
+
+pacing_config:
+  stagnation_threshold: 2
+  strand_quest_max: 4
+  strand_fire_gap_max: 10
+  transition_max_consecutive: 1
+
+override_config:
+  allowed_rationale_types: [TRANSITIONAL_SETUP, ARC_TIMING]
+  debt_multiplier: 1.2
+  payback_window_default: 2
+```
+
+**题材特点**：
+- 黄金三章硬性要求：300字内核心冲突，500字内点明金手指，1000字内首个爽点
+- 快速入局，不输出世界观设定，用一句话带过不重要内容
+- 先虐后爽节奏：压抑→反击→打脸→收获
+- 悬念连环，每个爽点必须有铺垫和爆发
+- 过渡章容忍度极低（最多1章），无注水内容
+
+---
+
 ### 2.11 克苏鲁 (cosmic-horror)
 
 ```yaml
@@ -600,6 +646,7 @@ override_config:
 
 | 版本 | 日期 | 变更 |
 |------|------|------|
+| v5.4.2 | 2026-02-18 | 新增番茄爽文风 (fanqie_shuangwen) profile |
 | v5.4.1 | 2026-02-06 | 新增 3 个内置题材profile：电竞/直播文/克苏鲁 |
 | v5.4 | 2026-02-03 | 版本号对齐，内容不变 |
 | v5.3 | 2026-02-01 | 初版，包含8个内置题材profile |
