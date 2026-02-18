@@ -151,4 +151,5 @@ python -m data_modules.index_manager get-pattern-usage-stats --last-n 20 --proje
 3. **债务利息默认关闭** - 仅在明确开启时计算
 4. **题材 Profile 可覆盖** - 在 state.json 中设置 genre_overrides
 5. **创意约束需继承** - 大纲规划时检查约束触发频率
-6. **status_reporter 真实数据优先** - 伏笔/爽点分析优先读取 `state.json` 与 `index.db`，缺数据时标记“数据不足”，避免估算误导
+6. **status_reporter 真实数据优先** - 伏笔/爽点分析优先读取 `state.json` 与 `index.db`，缺数据时标记"数据不足"，避免估算误导
+7. **中文标点规则** - 生成内容涉及中文时，双引号使用中文双引号 `""`，不使用英文双引号 `""`；代码块、JSON、YAML 语法内除外
