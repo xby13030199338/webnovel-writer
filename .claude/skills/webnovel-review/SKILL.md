@@ -123,3 +123,13 @@ python -m data_modules.index_manager save-review-metrics --data '{...}' --projec
 如发现 critical 问题，询问用户：
 - A) 立即修复（推荐）
 - B) 仅保存报告，稍后处理
+
+## Step 6: 中文引号修正（修复后执行）
+
+若 Step 5 选择立即修复，修复完成后对被修改的章节文件执行：
+
+```bash
+python3 "${CLAUDE_PLUGIN_ROOT}/scripts/chinese_quotes.py" "正文/第{NNNN}章.md"
+```
+
+若仅保存报告（选 B），跳过此步骤。

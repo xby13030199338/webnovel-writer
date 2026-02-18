@@ -111,6 +111,14 @@ cat "${CLAUDE_PLUGIN_ROOT}/skills/webnovel-write/references/writing/typesetting.
 
 先修复 critical/high，再处理 medium/low。
 
+## Step 4.5: 中文引号修正
+
+```bash
+python3 "${CLAUDE_PLUGIN_ROOT}/scripts/chinese_quotes.py" "正文/第{NNNN}章.md"
+```
+
+将正文中的英文双引号替换为中文双引号，代码块内容自动跳过。
+
 ## Step 5: Data Agent
 
 使用 Task 工具调用 `data-agent`：
