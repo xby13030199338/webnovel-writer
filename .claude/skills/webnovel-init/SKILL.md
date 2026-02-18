@@ -9,6 +9,7 @@ Goal: create a writing-ready project skeleton + creative constraints. No Quick/S
 
 ## Workflow
 0. Check API availability (Embedding + Rerank).
+0.5. [可选] 灵感模式：从模糊想法引导生成书名 + 简介 + 题材。
 1. Ask for deep setup info (story, character, world, golden finger, constraints).
 2. Run init_project.py with full parameters.
 3. Write idea_bank.json.
@@ -32,6 +33,87 @@ python3 "${CLAUDE_PLUGIN_ROOT}/scripts/check_api.py" --env-file "{PROJECT_PARENT
   ```bash
   python3 .claude/scripts/check_api.py
   ```
+
+## Step 0.5: 灵感模式（可选）
+
+**触发条件**：Step 0 完成后，询问用户是否启用灵感模式。
+
+> 你有一个模糊的故事想法，但还没想好书名和简介？可以启用灵感模式，我来一步步帮你引导生成。
+> 输入 **y** 启用，或直接告诉我书名/故事，跳过此步骤。
+
+若用户选择跳过，直接进入 Wave 1。
+
+---
+
+### 灵感模式引导流程（4步）
+
+**收集原始想法**：
+先请用户用 1-3 句话描述故事核心想法（不需要完整，越粗糙越好）。
+
+---
+
+**Step A：生成书名**
+
+根据用户的原始想法，生成 6 个书名建议，要求：
+1. 紧扣用户的原始想法和核心故事构思
+2. 富有创意和吸引力，涵盖不同风格倾向
+3. 书名不带「《》」符号
+4. 每个书名附一句话说明风格倾向
+
+展示后询问：
+- 选择一个编号，或
+- 输入自己的书名，或
+- 输入"重新生成"（可附加反馈，如"更霸气一点"）
+
+---
+
+**Step B：生成简介**
+
+基于原始想法 + 已确定书名，生成 6 个简介选项，要求：
+1. 必须紧扣原始想法，是原始想法的具体展开
+2. 符合书名风格
+3. 简洁有力，每个 50-100 字
+4. 包含核心冲突
+5. 涵盖不同故事走向，但都基于用户原始构思
+
+展示后询问：
+- 选择一个编号，或
+- 输入自己的简介，或
+- 输入"重新生成"（可附加反馈）
+
+---
+
+**Step C：确认题材**
+
+基于原始想法 + 书名 + 简介，推荐 3-4 个最匹配的题材标签（从 Wave 1 题材列表中选），并说明推荐理由。
+
+询问：
+- 确认推荐题材，或
+- 从列表中选择其他题材
+
+---
+
+**Step D：汇总确认**
+
+展示灵感模式收集结果：
+```
+书名：{title}
+简介：{description}
+题材：{genre}
+原始想法：{initial_idea}
+```
+
+询问是否确认，或需要修改哪项。确认后，将以上信息自动带入 Wave 1（书名/题材/一句话故事已预填）。
+
+---
+
+### 灵感模式注意事项
+- 每步都支持"重新生成"，可附加方向反馈
+- 用户可在任意步骤直接输入自定义内容跳过生成
+- 灵感模式结果仅预填 Wave 1 的书名/题材/一句话故事，其余信息仍需在后续 Wave 中收集
+- 若用户在灵感模式中途退出，已收集的信息保留，继续 Wave 1
+
+---
 
 ## Reference Loading Levels (strict, lazy)
 
