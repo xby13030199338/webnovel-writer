@@ -16,7 +16,7 @@ tools: Read, Grep, Bash
 - **上章钩子**: `state.json → chapter_meta` 或 `index.db`
 
 ## 输入
-- 章节正文（`正文/第{NNNN}章.md`）
+- 章节正文（支持多种路径格式：新格式 `正文/第x卷：卷名/第x章：章名.md` 或旧格式）
 - 上章钩子与模式（从 `state.json → chapter_meta` 或 `index.db`）
 - 题材 Profile（从 `state.json → project.genre`）
 - 是否为过渡章标记

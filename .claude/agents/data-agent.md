@@ -19,13 +19,17 @@ tools: Read, Write, Bash
 ```json
 {
   "chapter": 100,
-  "chapter_file": "正文/第0100章.md",
+  "chapter_file": "正文/第2卷：修炼之路/第100章：突破斗师.md",
   "review_score": 85,
   "project_root": "D:/wk/斗破苍穹",
   "storage_path": ".webnovel/",
   "state_file": ".webnovel/state.json"
 }
 ```
+
+**注意**: `chapter_file` 路径格式支持多种：
+- 新格式：`正文/第x卷：卷名/第x章：章名.md`
+- 旧格式：`正文/第x卷/第xxx章.md` 或 `正文/第xxxx章.md`
 
 **重要**: 所有数据写入 `{project_root}/.webnovel/` 目录：
 - index.db → 实体、别名、状态变化、关系、章节索引 (SQLite)
@@ -62,7 +66,7 @@ tools: Read, Write, Bash
 ### Step A: 加载上下文 (v5.1 SQL 查询)
 
 使用 Read 工具读取章节正文:
-- 章节正文: `正文/第0100章.md`
+- 章节正文: 使用传入的 `chapter_file` 参数（支持多种路径格式）
 
 使用 Bash 工具从 index.db 查询已有实体:
 ```bash
@@ -164,7 +168,7 @@ python -m data_modules.rag_adapter index-chapter \
 - 子块: `chunk_type='scene'`, `chunk_id='ch0100_s{scene_index}'`, `parent_chunk_id='ch0100_summary'`
 - `source_file`:
   - summary: `summaries/ch0100.md`
-  - scene: `正文/第0100章.md#scene_{scene_index}`
+  - scene: `{chapter_file}#scene_{scene_index}` (使用实际章节文件路径)
 
 ### Step H: 风格样本评估
 

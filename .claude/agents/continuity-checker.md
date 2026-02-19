@@ -26,9 +26,13 @@ tools: Read, Grep
   "project_root": "{PROJECT_ROOT}",
   "storage_path": ".webnovel/",
   "state_file": ".webnovel/state.json",
-  "chapter_file": "正文/第{NNNN}章.md"
+  "chapter_file": "{实际章节文件路径}"
 }
 ```
+
+**注意**: `chapter_file` 支持多种格式：
+- 新格式：`正文/第x卷：卷名/第x章：章名.md`
+- 旧格式：`正文/第x卷/第xxx章.md` 或 `正文/第xxxx章.md`
 
 **Parallel reads**:
 1. Target chapters from `正文/`

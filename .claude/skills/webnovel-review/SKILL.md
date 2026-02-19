@@ -129,7 +129,11 @@ python -m data_modules.index_manager save-review-metrics --data '{...}' --projec
 若 Step 5 选择立即修复，修复完成后对被修改的章节文件执行：
 
 ```bash
-python3 "${CLAUDE_PLUGIN_ROOT}/scripts/chinese_quotes.py" "正文/第{NNNN}章.md"
+python3 "${CLAUDE_PLUGIN_ROOT}/scripts/chinese_quotes.py" "{chapter_file_path}"
 ```
+
+**注意**: `{chapter_file_path}` 为实际的章节文件路径，支持多种格式：
+- 新格式：`正文/第x卷：卷名/第x章：章名.md`
+- 旧格式：`正文/第x卷/第xxx章.md` 或 `正文/第xxxx章.md`
 
 若仅保存报告（选 B），跳过此步骤。
