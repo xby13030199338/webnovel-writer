@@ -45,12 +45,24 @@ allowed-tools: Read Write Edit Grep Bash Task
 
 ### Step 1.5: Contract v2 Guidance 注入
 
+**智能方案**（推荐）：
 ```bash
-python "${CLAUDE_PLUGIN_ROOT}/scripts/extract_chapter_context.py" --chapter {chapter_num} --project-root "{PROJECT_ROOT}" --format json
+python "${CLAUDE_PLUGIN_ROOT}/scripts/smart_chapter_context.py" {chapter_num} "{PROJECT_ROOT}" json
 ```
+
+**执行逻辑**：
+1. 自动尝试完整版 `extract_chapter_context.py`
+2. 如果失败，自动切换到简化版 `fallback_chapter_context.py`
+3. 提供清晰的执行状态反馈
+
+**手动方案**（调试用）：
+- 完整版：`python "${CLAUDE_PLUGIN_ROOT}/scripts/extract_chapter_context.py" --chapter {chapter_num} --project-root "{PROJECT_ROOT}" --format json`
+- 简化版：`python "${CLAUDE_PLUGIN_ROOT}/scripts/fallback_chapter_context.py" {chapter_num} "{PROJECT_ROOT}" json`
 
 - 必须读取：`writing_guidance.guidance_items`
 - 推荐读取：`reader_signal` 与 `genre_profile.reference_hints`
+
+**注意**：智能方案会自动处理Python版本兼容性和项目初始化问题。
 
 ## Step 2: 写作
 

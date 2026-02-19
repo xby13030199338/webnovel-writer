@@ -17,7 +17,7 @@ import json
 import re
 import sys
 from pathlib import Path
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Optional
 
 from runtime_compat import enable_windows_utf8_stdio
 
@@ -33,7 +33,7 @@ def _ensure_scripts_path():
         sys.path.insert(0, str(scripts_dir))
 
 
-def find_project_root(start_path: Path | None = None) -> Path:
+def find_project_root(start_path: Optional[Path] = None) -> Path:
     """Find project root containing `.webnovel` directory."""
     if start_path is None:
         start_path = Path.cwd()
