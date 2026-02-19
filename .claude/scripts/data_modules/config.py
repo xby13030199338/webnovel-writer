@@ -11,7 +11,7 @@ API 配置通过环境变量读取（支持 .env 文件）：
 import os
 from pathlib import Path
 from dataclasses import dataclass, field
-from typing import Optional
+from typing import Optional, Dict, Tuple, Union
 
 from .context_weights import TEMPLATE_WEIGHTS_DYNAMIC_DEFAULT
 
@@ -41,7 +41,7 @@ def _load_dotenv():
 _load_dotenv()
 
 
-def _default_context_template_weights_dynamic() -> dict[str, dict[str, dict[str, float]]]:
+def _default_context_template_weights_dynamic() -> Dict[str, Dict[str, Dict[str, float]]]:
     return {
         stage: {
             template: dict(weights)
@@ -151,7 +151,7 @@ class DataModulesConfig:
     context_ranker_frequency_weight: float = 0.3
     context_ranker_hook_bonus: float = 0.2
     context_ranker_length_bonus_cap: float = 0.2
-    context_ranker_alert_critical_keywords: tuple[str, ...] = (
+    context_ranker_alert_critical_keywords: Tuple[str, ...] = (
         "冲突",
         "矛盾",
         "critical",
@@ -189,12 +189,12 @@ class DataModulesConfig:
     context_dynamic_budget_early_scene_bonus: float = 0.04
     context_dynamic_budget_late_global_bonus: float = 0.08
     context_dynamic_budget_late_scene_penalty: float = 0.06
-    context_template_weights_dynamic: dict[str, dict[str, dict[str, float]]] = field(
+    context_template_weights_dynamic: Dict[str, Dict[str, Dict[str, float]]] = field(
         default_factory=_default_context_template_weights_dynamic
     )
     context_genre_profile_support_composite: bool = True
     context_genre_profile_max_genres: int = 2
-    context_genre_profile_separators: tuple[str, ...] = (
+    context_genre_profile_separators: Tuple[str, ...] = (
         "+",
         "/",
         "|",
@@ -262,7 +262,7 @@ class DataModulesConfig:
         self.webnovel_dir.mkdir(parents=True, exist_ok=True)
 
     @classmethod
-    def from_project_root(cls, project_root: str | Path) -> "DataModulesConfig":
+    def from_project_root(cls, project_root: Union[str, Path]) -> "DataModulesConfig":
         return cls(project_root=Path(project_root))
 
 
@@ -278,6 +278,6 @@ def get_config(project_root: Optional[Path] = None) -> DataModulesConfig:
     return _default_config
 
 
-def set_project_root(project_root: str | Path):
+def set_project_root(project_root: Union[str, Path]):
     global _default_config
     _default_config = DataModulesConfig.from_project_root(project_root)

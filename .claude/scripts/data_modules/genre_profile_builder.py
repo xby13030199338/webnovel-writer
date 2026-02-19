@@ -7,7 +7,7 @@ Genre profile parsing helpers for ContextManager.
 from __future__ import annotations
 
 import re
-from typing import List
+from typing import List, Tuple
 
 from .genre_aliases import normalize_genre_token
 
@@ -16,7 +16,7 @@ def parse_genre_tokens(
     genre_raw: str,
     *,
     support_composite: bool,
-    separators: tuple[str, ...],
+    separators: Tuple[str, ...],
 ) -> List[str]:
     text = str(genre_raw or "").strip()
     if not text:

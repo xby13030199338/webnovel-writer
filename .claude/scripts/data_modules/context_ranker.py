@@ -12,7 +12,7 @@ Goals:
 from __future__ import annotations
 
 import math
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Tuple
 
 from .config import get_config
 
@@ -189,7 +189,7 @@ class ContextRanker:
         recency: float,
         frequency: float,
         bonus: float,
-    ) -> tuple[float, Dict[str, Any]]:
+    ) -> Tuple[float, Dict[str, Any]]:
         if getattr(self.config, "context_ranker_debug", False):
             item["_context_score"] = round(score, 6)
             item["_context_score_detail"] = {

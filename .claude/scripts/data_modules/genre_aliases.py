@@ -5,9 +5,10 @@ Genre alias normalization and profile key mapping.
 """
 
 from __future__ import annotations
+from typing import Dict
 
 
-GENRE_INPUT_ALIASES: dict[str, str] = {
+GENRE_INPUT_ALIASES: Dict[str, str] = {
     "修仙/玄幻": "修仙",
     "玄幻修仙": "修仙",
     "玄幻": "修仙",
@@ -26,7 +27,7 @@ GENRE_INPUT_ALIASES: dict[str, str] = {
 }
 
 
-GENRE_PROFILE_KEY_ALIASES: dict[str, str] = {
+GENRE_PROFILE_KEY_ALIASES: Dict[str, str] = {
     "修仙": "xianxia",
     "修仙/玄幻": "xianxia",
     "玄幻": "xianxia",

@@ -20,7 +20,7 @@ from copy import deepcopy
 from pathlib import Path
 
 from runtime_compat import enable_windows_utf8_stdio
-from typing import Dict, List, Optional, Any
+from typing import Dict, List, Optional, Any, Tuple
 from dataclasses import dataclass, field, asdict
 from datetime import datetime
 import filelock
@@ -116,7 +116,7 @@ class StateManager:
                 pass  # SQLStateManager 不可用时静默降级
 
         # 待写入的增量（锁内重读 + 合并 + 写入）
-        self._pending_entity_patches: Dict[tuple[str, str], _EntityPatch] = {}
+        self._pending_entity_patches: Dict[Tuple[str, str], _EntityPatch] = {}
         self._pending_alias_entries: Dict[str, List[Dict[str, str]]] = {}
         self._pending_state_changes: List[Dict[str, Any]] = []
         self._pending_structured_relationships: List[Dict[str, Any]] = []
@@ -1249,7 +1249,7 @@ def main():
         print_success(data, message=message)
         safe_log_tool_call(logger, tool_name=tool_name, success=True)
 
-    def emit_error(code: str, message: str, suggestion: str | None = None):
+    def emit_error(code: str, message: str, suggestion: Optional[str] = None):
         print_error(code, message, suggestion=suggestion)
         safe_log_tool_call(
             logger,

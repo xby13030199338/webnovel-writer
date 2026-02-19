@@ -10,7 +10,7 @@ from dataclasses import dataclass
 from datetime import datetime, timezone
 from filelock import FileLock
 from pathlib import Path
-from typing import Any, Dict, Optional
+from typing import Any, Dict, Optional, List
 
 from .config import get_config
 
@@ -88,5 +88,5 @@ class SnapshotManager:
                 return True
         return False
 
-    def list_snapshots(self) -> list[str]:
+    def list_snapshots(self) -> List[str]:
         return sorted(p.name for p in self.snapshot_dir.glob("ch*.json"))

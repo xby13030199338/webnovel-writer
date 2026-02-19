@@ -515,7 +515,7 @@ def main():
         print_success(data, message=message)
         safe_log_tool_call(logger, tool_name=tool_name, success=True)
 
-    def emit_error(code: str, message: str, suggestion: str | None = None):
+    def emit_error(code: str, message: str, suggestion: Optional[str] = None):
         print_error(code, message, suggestion=suggestion)
         safe_log_tool_call(
             logger,

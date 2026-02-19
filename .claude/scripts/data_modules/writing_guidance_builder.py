@@ -6,12 +6,12 @@ Writing guidance and checklist builders.
 
 from __future__ import annotations
 
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Optional
 
 from .genre_aliases import to_profile_key
 
 
-GENRE_GUIDANCE_TEXT: dict[str, str] = {
+GENRE_GUIDANCE_TEXT: Dict[str, str] = {
     "xianxia": "题材加权：强化升级/对抗结果的可见反馈，术语解释后置。",
     "shuangwen": "题材加权：维持高爽点密度，主爽点外叠加一个副轴反差。",
     "urban-power": "题材加权：优先写社会反馈链（他人反应→资源变化→地位变化）。",
@@ -113,7 +113,7 @@ def build_writing_checklist(
         item_id: str,
         label: str,
         *,
-        weight: float | None = None,
+        weight: Optional[float] = None,
         required: bool = False,
         source: str = "writing_guidance",
         verify_hint: str = "",

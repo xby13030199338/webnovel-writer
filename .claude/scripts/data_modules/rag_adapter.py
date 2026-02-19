@@ -24,7 +24,7 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 from chapter_paths import find_chapter_file
 
 from runtime_compat import enable_windows_utf8_stdio
-from typing import Dict, List, Optional, Any, Tuple
+from typing import Dict, List, Optional, Any, Tuple, Union, Set
 from dataclasses import dataclass
 from collections import Counter
 import re
@@ -50,9 +50,9 @@ class SearchResult:
     content: str
     score: float
     source: str  # "vector" | "bm25" | "hybrid"
-    parent_chunk_id: str | None = None
-    chunk_type: str | None = None
-    source_file: str | None = None
+    parent_chunk_id: Optional[str] = None
+    chunk_type: Optional[str] = None
+    source_file: Optional[str] = None
 
 
 class RAGAdapter:
@@ -83,7 +83,7 @@ class RAGAdapter:
         with self._get_conn() as conn:
             cursor = conn.cursor()
 
-            def _table_columns(table_name: str) -> set[str]:
+            def _table_columns(table_name: str) -> Set[str]:
                 cursor.execute(f"PRAGMA table_info({table_name})")
                 return {row[1] for row in cursor.fetchall()}
 
@@ -163,7 +163,7 @@ class RAGAdapter:
             row = cursor.fetchone()
             return int(row[0] or 0) if row else 0
 
-    def _get_recent_chunk_ids(self, limit: int, chunk_type: str | None = None) -> List[str]:
+    def _get_recent_chunk_ids(self, limit: int, chunk_type: Optional[str] = None) -> List[str]:
         if limit <= 0:
             return []
         with self._get_conn() as conn:
@@ -371,7 +371,7 @@ class RAGAdapter:
         query_type: str,
         results: List[SearchResult],
         latency_ms: int,
-        chapter: int | None = None,
+        chapter: Optional[int] = None,
     ) -> None:
         try:
             hit_sources = Counter([r.chunk_type or "unknown" for r in results])
@@ -432,9 +432,9 @@ class RAGAdapter:
         self,
         query: str,
         top_k: int = None,
-        chunk_type: str | None = None,
+        chunk_type: Optional[str] = None,
         log_query: bool = True,
-        chapter: int | None = None,
+        chapter: Optional[int] = None,
     ) -> List[SearchResult]:
         """向量相似度搜索"""
         top_k = top_k or self.config.vector_top_k
@@ -519,9 +519,9 @@ class RAGAdapter:
         top_k: int = None,
         k1: float = 1.5,
         b: float = 0.75,
-        chunk_type: str | None = None,
+        chunk_type: Optional[str] = None,
         log_query: bool = True,
-        chapter: int | None = None,
+        chapter: Optional[int] = None,
     ) -> List[SearchResult]:
         """BM25 关键词搜索"""
         top_k = top_k or self.config.bm25_top_k
@@ -619,7 +619,7 @@ class RAGAdapter:
         vector_top_k: int = None,
         bm25_top_k: int = None,
         rerank_top_n: int = None,
-        chunk_type: str | None = None,
+        chunk_type: Optional[str] = None,
         log_query: bool = True,
     ) -> List[SearchResult]:
         """
@@ -877,7 +877,7 @@ def main():
         print_success(data, message=message)
         safe_log_tool_call(adapter.index_manager, tool_name=tool_name, success=True)
 
-    def emit_error(code: str, message: str, suggestion: str | None = None):
+    def emit_error(code: str, message: str, suggestion: Optional[str] = None):
         print_error(code, message, suggestion=suggestion)
         safe_log_tool_call(
             adapter.index_manager,

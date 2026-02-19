@@ -5,18 +5,19 @@ Centralized context template weights.
 """
 
 from __future__ import annotations
+from typing import Dict
 
 
 DEFAULT_TEMPLATE = "plot"
 
-TEMPLATE_WEIGHTS: dict[str, dict[str, float]] = {
+TEMPLATE_WEIGHTS: Dict[str, Dict[str, float]] = {
     "plot": {"core": 0.40, "scene": 0.35, "global": 0.25},
     "battle": {"core": 0.35, "scene": 0.45, "global": 0.20},
     "emotion": {"core": 0.45, "scene": 0.35, "global": 0.20},
     "transition": {"core": 0.50, "scene": 0.25, "global": 0.25},
 }
 
-TEMPLATE_WEIGHTS_DYNAMIC_DEFAULT: dict[str, dict[str, dict[str, float]]] = {
+TEMPLATE_WEIGHTS_DYNAMIC_DEFAULT: Dict[str, Dict[str, Dict[str, float]]] = {
     "early": {
         "plot": {"core": 0.48, "scene": 0.39, "global": 0.13},
         "battle": {"core": 0.42, "scene": 0.50, "global": 0.08},

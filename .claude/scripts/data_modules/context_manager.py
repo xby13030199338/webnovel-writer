@@ -92,7 +92,7 @@ class ContextManager:
     def build_context(
         self,
         chapter: int,
-        template: str | None = None,
+        template: Optional[str] = None,
         use_snapshot: bool = True,
         save_snapshot: bool = True,
         max_chars: Optional[int] = None,

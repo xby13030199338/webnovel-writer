@@ -9,7 +9,7 @@ from __future__ import annotations
 import json
 import logging
 from datetime import datetime
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Set
 
 
 logger = logging.getLogger(__name__)
@@ -90,7 +90,7 @@ class IndexObservabilityMixin:
                 cursor.execute("SELECT * FROM invalid_facts ORDER BY id DESC")
             return [dict(r) for r in cursor.fetchall()]
 
-    def get_invalid_ids(self, source_type: str, status: str = "confirmed") -> set[str]:
+    def get_invalid_ids(self, source_type: str, status: str = "confirmed") -> Set[str]:
         """获取无效事实 ID 集合"""
         with self._get_conn() as conn:
             cursor = conn.cursor()
