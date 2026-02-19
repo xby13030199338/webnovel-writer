@@ -594,6 +594,36 @@ class ContextManager:
 
     def _load_outline(self, chapter: int) -> str:
         outline_dir = self.config.outline_dir
+
+        # 1. 先尝试卷级大纲文件查找（与 extract_chapter_context.py 一致）
+        volume_num = (chapter - 1) // 50 + 1
+        volume_patterns = [
+            f"第{volume_num}卷-详细大纲.md",   # 支持连字符（当前实际格式）
+            f"第{volume_num}卷 详细大纲.md",   # 支持空格（代码期望格式）
+            f"第{volume_num}卷详细大纲.md",    # 支持无分隔符
+        ]
+
+        for pattern in volume_patterns:
+            volume_file = outline_dir / pattern
+            if volume_file.exists():
+                content = volume_file.read_text(encoding="utf-8")
+                # 在卷文件中搜索章节大纲（使用与 extract_chapter_context.py 相同的正则）
+                import re
+                # 主要模式：### 第X章：标题
+                pattern_regex = rf"###\s*第\s*{chapter}\s*章[：:]\s*(.+?)(?=###\s*第\s*\d+\s*章|##\s|$)"
+                match = re.search(pattern_regex, content, re.DOTALL)
+                if not match:
+                    # 备用模式：### 第X章：标题（无空格）
+                    pattern_regex2 = rf"###\s*第{chapter}章[：:]\s*(.+?)(?=###\s*第\d+章|##\s|$)"
+                    match = re.search(pattern_regex2, content, re.DOTALL)
+
+                if match:
+                    outline = match.group(0).strip()
+                    if len(outline) > 1500:
+                        outline = outline[:1500] + "\n...(已截断)"
+                    return outline
+
+        # 2. 回退到原有的独立章节文件查找逻辑（保持向后兼容）
         patterns = [
             f"第{chapter}章*.md",
             f"第{chapter:02d}章*.md",
@@ -604,6 +634,7 @@ class ContextManager:
             matches = list(outline_dir.glob(pattern))
             if matches:
                 return matches[0].read_text(encoding="utf-8")
+
         return f"[大纲未找到: 第{chapter}章]"
 
     def _load_recent_summaries(self, chapter: int, window: int = 3) -> List[Dict[str, Any]]:

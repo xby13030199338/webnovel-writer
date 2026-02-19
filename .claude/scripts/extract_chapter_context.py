@@ -54,10 +54,24 @@ def find_project_root(start_path: Optional[Path] = None) -> Path:
 def extract_chapter_outline(project_root: Path, chapter_num: int) -> str:
     """Extract chapter outline segment from volume outline file."""
     volume_num = (chapter_num - 1) // 50 + 1
-    outline_file = project_root / "大纲" / f"第{volume_num}卷 详细大纲.md"
+    outline_dir = project_root / "大纲"
 
-    if not outline_file.exists():
-        return f"⚠️ 大纲文件不存在: {outline_file}"
+    # 支持多种文件名格式
+    volume_patterns = [
+        f"第{volume_num}卷-详细大纲.md",   # 支持连字符（当前实际格式）
+        f"第{volume_num}卷 详细大纲.md",   # 支持空格（原代码期望格式）
+        f"第{volume_num}卷详细大纲.md",    # 支持无分隔符
+    ]
+
+    outline_file = None
+    for pattern in volume_patterns:
+        candidate = outline_dir / pattern
+        if candidate.exists():
+            outline_file = candidate
+            break
+
+    if not outline_file:
+        return f"⚠️ 大纲文件不存在，尝试过的格式: {volume_patterns}"
 
     content = outline_file.read_text(encoding="utf-8")
 
