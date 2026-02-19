@@ -124,9 +124,9 @@ python -m data_modules.index_manager save-review-metrics --data '{...}' --projec
 - A) 立即修复（推荐）
 - B) 仅保存报告，稍后处理
 
-## Step 6: 中文引号修正（修复后执行）
+## Step 6: 中文引号修正（强制执行）
 
-若 Step 5 选择立即修复，修复完成后对被修改的章节文件执行：
+**重要**: 若 Step 5 选择立即修复，修复完成后必须对所有被修改的章节文件执行中文引号修正：
 
 ```bash
 python3 "${CLAUDE_PLUGIN_ROOT}/scripts/chinese_quotes.py" "{chapter_file_path}"
@@ -136,4 +136,6 @@ python3 "${CLAUDE_PLUGIN_ROOT}/scripts/chinese_quotes.py" "{chapter_file_path}"
 - 新格式：`正文/第x卷：卷名/第x章：章名.md`
 - 旧格式：`正文/第x卷/第xxx章.md` 或 `正文/第xxxx章.md`
 
-若仅保存报告（选 B），跳过此步骤。
+**执行确认**: 必须显示处理结果（如"✓ 替换 X 处"），确保步骤已完成。
+
+若仅保存报告（选 B），跳过此步骤，但提醒用户后续修复时需要执行中文引号修正。

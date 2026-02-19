@@ -111,7 +111,9 @@ cat "${CLAUDE_PLUGIN_ROOT}/skills/webnovel-write/references/writing/typesetting.
 
 先修复 critical/high，再处理 medium/low。
 
-## Step 4.5: 中文引号修正
+## Step 4.5: 中文引号修正（强制执行）
+
+**重要**: 此步骤为强制步骤，每次正文修改后必须执行。
 
 ```bash
 python3 "${CLAUDE_PLUGIN_ROOT}/scripts/chinese_quotes.py" "{chapter_file_path}"
@@ -119,6 +121,8 @@ python3 "${CLAUDE_PLUGIN_ROOT}/scripts/chinese_quotes.py" "{chapter_file_path}"
 
 将正文中的英文双引号替换为中文双引号，代码块内容自动跳过。
 注：{chapter_file_path} 为实际的章节文件路径，格式为"正文/第x卷：卷名/第x章：章名.md"。
+
+**执行确认**: 必须显示处理结果（如"✓ 替换 X 处"），确保步骤已完成。
 
 ## Step 5: Data Agent
 

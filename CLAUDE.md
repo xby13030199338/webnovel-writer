@@ -139,6 +139,8 @@ python -m data_modules.index_manager get-pattern-usage-stats --last-n 20 --proje
 | `.webnovel/idea_bank.json` | 创意银行（v5.4.2） |
 | `正文/第x卷：卷名/第x章：章名.md` | 新的章节文件组织格式（v5.4.3） |
 | `.claude/scripts/chapter_paths.py` | 章节路径管理模块（支持多种格式） |
+| `.claude/scripts/post_process_chapter.py` | 正文处理自动化脚本（v5.4.3） |
+| `.claude/references/chapter-post-processing.md` | 正文处理自动化指南（v5.4.3） |
 | `设定集/复合题材-融合逻辑.md` | 复合题材融合逻辑模板 |
 | `设定集/女主卡.md` | 女主卡模板 |
 | `设定集/主角组.md` | 多主角设定模板 |
@@ -156,3 +158,4 @@ python -m data_modules.index_manager get-pattern-usage-stats --last-n 20 --proje
 6. **status_reporter 真实数据优先** - 伏笔/爽点分析优先读取 `state.json` 与 `index.db`，缺数据时标记”数据不足”，避免估算误导
 7. **中文标点规则** - 生成内容涉及中文时，双引号使用中文双引号 `””`，不使用英文双引号 `””`；代码块、JSON、YAML 语法内除外
 8. **新文件组织格式（v5.4.3）** - 章节文件现采用 `正文/第x卷：卷名/第x章：章名.md` 格式，卷名和章名从大纲自动解析；兼容旧格式，使用 `chapter_paths.py` 统一管理
+9. **正文处理自动化（v5.4.3）** - 每次涉及正文生成或修改后，强制执行中文引号修正；集成到 webnovel-write、webnovel-review、webnovel-resume 流程中

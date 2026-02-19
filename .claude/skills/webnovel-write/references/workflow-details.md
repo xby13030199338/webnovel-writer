@@ -120,7 +120,7 @@ python -m data_modules.index_manager save-review-metrics --data '{...}' --projec
 - [ ] 硬规则检查完成
 - [ ] AI 痕迹已检查
 - [ ] 未违反润色红线
-- [ ] Step 4.5 中文引号修正已执行（`chinese_quotes.py`）
+- [ ] **Step 4.5 中文引号修正已执行（强制）** - 必须显示处理结果
 
 ## Step 5 债务与利息开关
 
