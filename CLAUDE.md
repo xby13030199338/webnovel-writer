@@ -4,7 +4,7 @@
 
 ## 项目概述
 
-**Webnovel Writer** 是基于 Claude Code 的长篇网文辅助创作系统（v5.4.2），解决 AI 写作中的"遗忘"和"幻觉"问题，支持 200 万字量级连载创作。
+**Webnovel Writer** 是基于 Claude Code 的长篇网文辅助创作系统（v5.4.3），解决 AI 写作中的"遗忘"和"幻觉"问题，支持 200 万字量级连载创作。
 
 ## 核心理念
 
@@ -137,6 +137,8 @@ python -m data_modules.index_manager get-pattern-usage-stats --last-n 20 --proje
 | `.webnovel/state.json` | 项目状态（精简版） |
 | `.webnovel/index.db` | SQLite 索引数据库 |
 | `.webnovel/idea_bank.json` | 创意银行（v5.4.2） |
+| `正文/第x卷：卷名/第x章：章名.md` | 新的章节文件组织格式（v5.4.3） |
+| `.claude/scripts/chapter_paths.py` | 章节路径管理模块（支持多种格式） |
 | `设定集/复合题材-融合逻辑.md` | 复合题材融合逻辑模板 |
 | `设定集/女主卡.md` | 女主卡模板 |
 | `设定集/主角组.md` | 多主角设定模板 |
@@ -151,5 +153,6 @@ python -m data_modules.index_manager get-pattern-usage-stats --last-n 20 --proje
 3. **债务利息默认关闭** - 仅在明确开启时计算
 4. **题材 Profile 可覆盖** - 在 state.json 中设置 genre_overrides
 5. **创意约束需继承** - 大纲规划时检查约束触发频率
-6. **status_reporter 真实数据优先** - 伏笔/爽点分析优先读取 `state.json` 与 `index.db`，缺数据时标记“数据不足”，避免估算误导
-7. **中文标点规则** - 生成内容涉及中文时，双引号使用中文双引号 `“”`，不使用英文双引号 `""`；代码块、JSON、YAML 语法内除外
+6. **status_reporter 真实数据优先** - 伏笔/爽点分析优先读取 `state.json` 与 `index.db`，缺数据时标记”数据不足”，避免估算误导
+7. **中文标点规则** - 生成内容涉及中文时，双引号使用中文双引号 `””`，不使用英文双引号 `””`；代码块、JSON、YAML 语法内除外
+8. **新文件组织格式（v5.4.3）** - 章节文件现采用 `正文/第x卷：卷名/第x章：章名.md` 格式，卷名和章名从大纲自动解析；兼容旧格式，使用 `chapter_paths.py` 统一管理

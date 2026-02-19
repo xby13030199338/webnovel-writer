@@ -55,8 +55,8 @@ python "${CLAUDE_PLUGIN_ROOT}/scripts/extract_chapter_context.py" --chapter {cha
 ## Step 2: 写作
 
 - 遵循三大原则：大纲即法律 / 设定即物理 / 新实体需记录。
-- 输出纯正文到 `正文/第{NNNN}章.md`。
-- 章节内容需体现本章“反派层级”要求（无反派层级时标注“无”）。
+- 输出纯正文到卷目录结构：`正文/第x卷：卷名/第x章：章名.md`。
+- 章节内容需体现本章”反派层级”要求（无反派层级时标注”无”）。
 - 开写前加载核心约束：
 
 ```bash
@@ -114,10 +114,11 @@ cat "${CLAUDE_PLUGIN_ROOT}/skills/webnovel-write/references/writing/typesetting.
 ## Step 4.5: 中文引号修正
 
 ```bash
-python3 "${CLAUDE_PLUGIN_ROOT}/scripts/chinese_quotes.py" "正文/第{NNNN}章.md"
+python3 "${CLAUDE_PLUGIN_ROOT}/scripts/chinese_quotes.py" "{chapter_file_path}"
 ```
 
 将正文中的英文双引号替换为中文双引号，代码块内容自动跳过。
+注：{chapter_file_path} 为实际的章节文件路径，格式为"正文/第x卷：卷名/第x章：章名.md"。
 
 ## Step 5: Data Agent
 
@@ -126,7 +127,7 @@ python3 "${CLAUDE_PLUGIN_ROOT}/scripts/chinese_quotes.py" "正文/第{NNNN}章.m
 ```
 调用 data-agent，参数：
 - chapter: {chapter_num}
-- chapter_file: "正文/第{NNNN}章.md"
+- chapter_file: {chapter_file_path}  # 实际的章节文件路径
 - review_score: {overall_score from Step 3}
 - project_root: {PROJECT_ROOT}
 - storage_path: .webnovel/

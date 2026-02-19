@@ -15,7 +15,13 @@ import sqlite3
 import json
 import math
 import logging
+import sys
+import os
 from pathlib import Path
+
+# Add parent directory to path for chapter_paths import
+sys.path.insert(0, str(Path(__file__).parent.parent))
+from chapter_paths import find_chapter_file
 
 from runtime_compat import enable_windows_utf8_stdio
 from typing import Dict, List, Optional, Any, Tuple
@@ -910,6 +916,17 @@ def main():
                 }
             )
 
+        # 获取实际的章节文件路径
+        project_root = Path(args.project_root) if hasattr(args, 'project_root') else Path.cwd()
+        chapter_file = find_chapter_file(project_root, args.chapter)
+        if chapter_file:
+            # 使用相对于项目根目录的路径
+            relative_path = chapter_file.relative_to(project_root)
+            source_file_base = str(relative_path)
+        else:
+            # 回退到旧格式
+            source_file_base = f"正文/第{args.chapter:04d}章.md"
+
         for s in scenes:
             scene_index = s.get("index", 0)
             chunk_id = f"ch{args.chapter:04d}_s{int(scene_index)}"
@@ -921,7 +938,7 @@ def main():
                     "chunk_type": "scene",
                     "parent_chunk_id": parent_chunk_id,
                     "chunk_id": chunk_id,
-                    "source_file": f"正文/第{args.chapter:04d}章.md#scene_{int(scene_index)}",
+                    "source_file": f"{source_file_base}#scene_{int(scene_index)}",
                 }
             )
 

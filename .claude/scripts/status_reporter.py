@@ -345,9 +345,10 @@ class StatusReporter:
             print(f"⚠️  正文目录不存在: {self.chapters_dir}")
             return
 
-        # 支持两种目录结构：
-        # 1) 正文/第0001章.md
-        # 2) 正文/第1卷/第001章-标题.md
+        # 支持三种目录结构：
+        # 1) 正文/第0001章.md (legacy flat)
+        # 2) 正文/第1卷/第001章-标题.md (old volume)
+        # 3) 正文/第1卷：卷名/第001章：章名.md (new volume)
         chapter_files = sorted(self.chapters_dir.rglob("第*.md"))
 
         # v5.1 引入: 从 SQLite 获取已知角色名
