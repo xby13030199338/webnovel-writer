@@ -25,8 +25,12 @@ def test_workflow_lifecycle_and_trace(tmp_path, monkeypatch):
     webnovel_dir.mkdir(parents=True, exist_ok=True)
 
     module.start_task("webnovel-write", {"chapter_num": 7})
-    module.start_step("Step 1", "Context")
-    module.complete_step("Step 1", json.dumps({"state_json_modified": True}, ensure_ascii=False))
+    for step_id in module.get_pending_steps("webnovel-write", mode="standard"):
+        module.start_step(step_id, f"name-{step_id}")
+        if step_id == "Step 1":
+            module.complete_step(step_id, json.dumps({"state_json_modified": True}, ensure_ascii=False))
+        else:
+            module.complete_step(step_id)
     module.complete_task(json.dumps({"review_completed": True}, ensure_ascii=False))
 
     state = module.load_state()
@@ -193,3 +197,52 @@ def test_cleanup_artifacts_confirm_deletes_with_backup(tmp_path, monkeypatch):
     backup_dir = tmp_path / ".webnovel" / "recovery_backups"
     backups = list(backup_dir.glob("ch0008-*"))
     assert backups
+
+
+def test_get_pending_steps_respects_write_mode():
+    module = _load_module()
+
+    standard_steps = module.get_pending_steps("webnovel-write", mode="standard")
+    fast_steps = module.get_pending_steps("webnovel-write", mode="fast")
+    minimal_steps = module.get_pending_steps("webnovel-write", mode="minimal")
+
+    assert "Step 2B" in standard_steps
+    assert "Step 2B" not in fast_steps
+    assert "Step 2B" not in minimal_steps
+
+
+def test_complete_task_rejects_missing_required_steps_for_fast_mode(tmp_path, monkeypatch):
+    module = _load_module()
+    monkeypatch.setattr(module, "find_project_root", lambda: tmp_path)
+
+    webnovel_dir = tmp_path / ".webnovel"
+    webnovel_dir.mkdir(parents=True, exist_ok=True)
+
+    module.start_task("webnovel-write", {"chapter_num": 18, "mode": "fast"})
+    module.start_step("Step 1", "Context")
+    module.complete_step("Step 1")
+    module.complete_task()
+
+    state = module.load_state()
+    assert state.get("current_task") is not None
+    assert state["current_task"]["status"] == module.TASK_STATUS_RUNNING
+    assert state.get("history") == []
+
+
+def test_complete_task_accepts_when_fast_required_steps_completed(tmp_path, monkeypatch):
+    module = _load_module()
+    monkeypatch.setattr(module, "find_project_root", lambda: tmp_path)
+
+    webnovel_dir = tmp_path / ".webnovel"
+    webnovel_dir.mkdir(parents=True, exist_ok=True)
+
+    module.start_task("webnovel-write", {"chapter_num": 19, "mode": "fast"})
+    for step_id in module.get_pending_steps("webnovel-write", mode="fast"):
+        module.start_step(step_id, f"name-{step_id}")
+        module.complete_step(step_id)
+
+    module.complete_task()
+
+    state = module.load_state()
+    assert state["current_task"] is None
+    assert state["history"][-1]["status"] == module.TASK_STATUS_COMPLETED

@@ -154,10 +154,15 @@ export PYTHONPATH=".claude/scripts"
 | 包名 | 用途 |
 |------|------|
 | aiohttp | 异步 HTTP 客户端，用于 Embedding/Reranker API 调用 |
+| requests | 同步 HTTP 客户端，用于 `check_api.py` 连通性检测 |
 | filelock | 文件锁，防止 state.json 并发写入冲突 |
 | pydantic | Schema 校验和数据验证 |
 | pytest | 单元测试（可选） |
 | pytest-cov | 覆盖率统计（可选） |
+
+> `data_modules` 相关 CLI 请使用模块方式调用（推荐）：  
+> `python -m data_modules.index_manager ...`  
+> `python -m data_modules.rag_adapter ...`
 
 ### 2. 初始化项目
 

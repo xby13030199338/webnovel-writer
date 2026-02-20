@@ -42,6 +42,10 @@ STEP_STATUS_RUNNING = "running"
 STEP_STATUS_COMPLETED = "completed"
 STEP_STATUS_FAILED = "failed"
 
+WRITE_MODE_STANDARD = "standard"
+WRITE_MODE_FAST = "fast"
+WRITE_MODE_MINIMAL = "minimal"
+
 
 def now_iso() -> str:
     return datetime.now().isoformat()
@@ -109,9 +113,22 @@ def expected_step_owner(command: str, step_id: str) -> str:
     return "unknown"
 
 
-def step_allowed_before(command: str, step_id: str, completed_steps: list[Dict[str, Any]]) -> bool:
+def _normalize_write_mode(mode: Optional[str]) -> str:
+    value = str(mode or "").strip().lower()
+    if value in {WRITE_MODE_STANDARD, WRITE_MODE_FAST, WRITE_MODE_MINIMAL}:
+        return value
+    return WRITE_MODE_STANDARD
+
+
+def _resolve_task_mode(command: str, args: Optional[Dict[str, Any]] = None) -> str:
+    if command != "webnovel-write":
+        return WRITE_MODE_STANDARD
+    return _normalize_write_mode((args or {}).get("mode"))
+
+
+def step_allowed_before(command: str, step_id: str, completed_steps: list[Dict[str, Any]], *, mode: Optional[str] = None) -> bool:
     """Check simple ordering constraints by pending sequence."""
-    sequence = get_pending_steps(command)
+    sequence = get_pending_steps(command, mode=mode)
     if step_id not in sequence:
         return True
 
@@ -123,16 +140,18 @@ def step_allowed_before(command: str, step_id: str, completed_steps: list[Dict[s
 
 def _new_task(command: str, args: Dict[str, Any]) -> Dict[str, Any]:
     started_at = now_iso()
+    task_mode = _resolve_task_mode(command, args)
     return {
         "command": command,
         "args": args,
+        "mode": task_mode,
         "started_at": started_at,
         "last_heartbeat": started_at,
         "status": TASK_STATUS_RUNNING,
         "current_step": None,
         "completed_steps": [],
         "failed_steps": [],
-        "pending_steps": get_pending_steps(command),
+        "pending_steps": get_pending_steps(command, mode=task_mode),
         "retry_count": 0,
         "artifacts": {
             "chapter_file": {},
@@ -206,12 +225,14 @@ def start_step(step_id, step_name, progress_note=None):
         return
 
     command = str(task.get("command") or "")
-    if not step_allowed_before(command, step_id, task.get("completed_steps", [])):
+    mode = str(task.get("mode") or WRITE_MODE_STANDARD)
+    if not step_allowed_before(command, step_id, task.get("completed_steps", []), mode=mode):
         safe_append_call_trace(
             "step_order_violation",
             {
                 "step_id": step_id,
                 "command": command,
+                "mode": mode,
                 "completed_steps": [row.get("id") for row in task.get("completed_steps", [])],
             },
         )
@@ -307,6 +328,22 @@ def complete_task(final_artifacts_json=None):
 
     _finalize_current_step_as_failed(task, reason="task_completed_with_active_step")
 
+    missing_steps = validate_required_steps(task)
+    if missing_steps:
+        task["last_heartbeat"] = now_iso()
+        save_state(state)
+        safe_append_call_trace(
+            "task_complete_rejected",
+            {
+                "command": task.get("command"),
+                "chapter": task.get("args", {}).get("chapter_num"),
+                "mode": task.get("mode", WRITE_MODE_STANDARD),
+                "missing_steps": missing_steps,
+            },
+        )
+        print(f"⚠️ 任务完成被拒绝，缺少必要步骤: {', '.join(missing_steps)}")
+        return
+
     task["status"] = TASK_STATUS_COMPLETED
     task["completed_at"] = now_iso()
 
@@ -368,6 +405,7 @@ def detect_interruption():
         "artifacts": task.get("artifacts", {}),
         "started_at": task.get("started_at"),
         "retry_count": int(task.get("retry_count", 0)),
+        "mode": task.get("mode", WRITE_MODE_STANDARD),
     }
 
     safe_append_call_trace(
@@ -683,6 +721,8 @@ def load_state():
     if state.get("current_task"):
         state["current_task"].setdefault("failed_steps", [])
         state["current_task"].setdefault("retry_count", 0)
+        command = str(state["current_task"].get("command") or "")
+        state["current_task"].setdefault("mode", _resolve_task_mode(command, state["current_task"].get("args", {})))
     return state
 
 
@@ -693,13 +733,24 @@ def save_state(state):
     atomic_write_json(state_file, state, use_lock=True, backup=False)
 
 
-def get_pending_steps(command):
+def get_pending_steps(command, mode: Optional[str] = None):
     """Get command pending step list."""
     if command == "webnovel-write":
+        write_mode = _normalize_write_mode(mode)
+        if write_mode in {WRITE_MODE_FAST, WRITE_MODE_MINIMAL}:
+            return ["Step 1", "Step 1.5", "Step 2A", "Step 3", "Step 4", "Step 5", "Step 6"]
         return ["Step 1", "Step 1.5", "Step 2A", "Step 2B", "Step 3", "Step 4", "Step 5", "Step 6"]
     if command == "webnovel-review":
         return ["Step 1", "Step 2", "Step 3", "Step 4", "Step 5", "Step 6", "Step 7", "Step 8"]
     return []
+
+
+def validate_required_steps(task: Dict[str, Any]) -> list[str]:
+    command = str(task.get("command") or "")
+    mode = str(task.get("mode") or WRITE_MODE_STANDARD)
+    required_steps = get_pending_steps(command, mode=mode)
+    completed_ids = {str(item.get("id")) for item in task.get("completed_steps", [])}
+    return [step for step in required_steps if step not in completed_ids]
 
 
 def extract_stable_state(task):
@@ -721,6 +772,12 @@ if __name__ == "__main__":
     p_start_task = subparsers.add_parser("start-task", help="开始新任务")
     p_start_task.add_argument("--command", required=True, help="命令名称")
     p_start_task.add_argument("--chapter", type=int, help="章节号")
+    p_start_task.add_argument(
+        "--mode",
+        choices=[WRITE_MODE_STANDARD, WRITE_MODE_FAST, WRITE_MODE_MINIMAL],
+        default=WRITE_MODE_STANDARD,
+        help="写作模式（仅 webnovel-write 使用）",
+    )
 
     p_start_step = subparsers.add_parser("start-step", help="开始 Step")
     p_start_step.add_argument("--step-id", required=True, help="Step ID")
@@ -748,7 +805,10 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     if args.action == "start-task":
-        start_task(args.command, {"chapter_num": args.chapter})
+        task_args = {"chapter_num": args.chapter}
+        if args.command == "webnovel-write":
+            task_args["mode"] = args.mode
+        start_task(args.command, task_args)
     elif args.action == "start-step":
         start_step(args.step_id, args.step_name, args.note)
     elif args.action == "complete-step":

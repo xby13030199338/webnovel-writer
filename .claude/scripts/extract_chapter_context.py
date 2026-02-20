@@ -19,6 +19,7 @@ import sys
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
+from project_locator import resolve_project_root
 from runtime_compat import enable_windows_utf8_stdio
 
 try:
@@ -34,21 +35,8 @@ def _ensure_scripts_path():
 
 
 def find_project_root(start_path: Optional[Path] = None) -> Path:
-    """Find project root containing `.webnovel` directory."""
-    if start_path is None:
-        start_path = Path.cwd()
-
-    search_paths = [
-        start_path,
-        start_path / "webnovel-project",
-        start_path.parent,
-    ]
-
-    for path in search_paths:
-        if (path / ".webnovel").exists():
-            return path
-
-    raise FileNotFoundError("未找到 .webnovel 目录，请确认项目路径")
+    """兼容保留：统一复用 project_locator 的项目定位逻辑。"""
+    return resolve_project_root(cwd=start_path)
 
 
 def extract_chapter_outline(project_root: Path, chapter_num: int) -> str:
@@ -362,7 +350,10 @@ def main():
     args = parser.parse_args()
 
     try:
-        project_root = Path(args.project_root) if args.project_root else find_project_root()
+        if args.project_root:
+            project_root = resolve_project_root(args.project_root)
+        else:
+            project_root = find_project_root()
         payload = build_chapter_context_payload(project_root, args.chapter)
 
         if args.format == "json":

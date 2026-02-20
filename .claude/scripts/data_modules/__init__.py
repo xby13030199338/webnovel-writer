@@ -12,17 +12,57 @@ Data Modules - 数据链模块包
 - API 客户端 (api_client) - 只有 Embed + Rerank
 """
 
+from importlib import import_module
+from typing import Dict, Tuple
+
 from .config import DataModulesConfig, get_config, set_project_root
-from .api_client import ModalAPIClient, get_client
-from .entity_linker import EntityLinker, DisambiguationResult
-from .state_manager import StateManager, EntityState, Relationship, StateChange
-from .index_manager import IndexManager, ChapterMeta, SceneMeta, ReviewMetrics
-from .rag_adapter import RAGAdapter, SearchResult
-from .context_manager import ContextManager
-from .context_ranker import ContextRanker
-from .snapshot_manager import SnapshotManager
-from .query_router import QueryRouter
-from .style_sampler import StyleSampler, StyleSample, SceneType
+
+
+_LAZY_ATTRS: Dict[str, Tuple[str, str]] = {
+    # API Client
+    "ModalAPIClient": (".api_client", "ModalAPIClient"),
+    "get_client": (".api_client", "get_client"),
+    # Entity Linker
+    "EntityLinker": (".entity_linker", "EntityLinker"),
+    "DisambiguationResult": (".entity_linker", "DisambiguationResult"),
+    # State Manager
+    "StateManager": (".state_manager", "StateManager"),
+    "EntityState": (".state_manager", "EntityState"),
+    "Relationship": (".state_manager", "Relationship"),
+    "StateChange": (".state_manager", "StateChange"),
+    # Index Manager
+    "IndexManager": (".index_manager", "IndexManager"),
+    "ChapterMeta": (".index_manager", "ChapterMeta"),
+    "SceneMeta": (".index_manager", "SceneMeta"),
+    "ReviewMetrics": (".index_manager", "ReviewMetrics"),
+    # RAG Adapter
+    "RAGAdapter": (".rag_adapter", "RAGAdapter"),
+    "SearchResult": (".rag_adapter", "SearchResult"),
+    # Context helpers
+    "ContextManager": (".context_manager", "ContextManager"),
+    "ContextRanker": (".context_ranker", "ContextRanker"),
+    "SnapshotManager": (".snapshot_manager", "SnapshotManager"),
+    "QueryRouter": (".query_router", "QueryRouter"),
+    # Style Sampler
+    "StyleSampler": (".style_sampler", "StyleSampler"),
+    "StyleSample": (".style_sampler", "StyleSample"),
+    "SceneType": (".style_sampler", "SceneType"),
+}
+
+
+def __getattr__(name: str):
+    target = _LAZY_ATTRS.get(name)
+    if target is None:
+        raise AttributeError(f"module '{__name__}' has no attribute '{name}'")
+    module_name, attr_name = target
+    module = import_module(module_name, __name__)
+    value = getattr(module, attr_name)
+    globals()[name] = value
+    return value
+
+
+def __dir__():
+    return sorted(set(globals()) | set(_LAZY_ATTRS))
 
 __all__ = [
     # Config

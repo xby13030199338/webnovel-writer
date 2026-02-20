@@ -9,6 +9,8 @@ import sys
 from pathlib import Path
 from typing import Dict, Any, Optional
 
+from project_locator import resolve_project_root
+
 def create_fallback_chapter_context(chapter_num: int, project_root: Optional[Path] = None) -> Dict[str, Any]:
     """
     创建备用的章节上下文，当extract_chapter_context.py无法运行时使用
@@ -21,7 +23,7 @@ def create_fallback_chapter_context(chapter_num: int, project_root: Optional[Pat
         Dict: 章节上下文数据
     """
     if project_root is None:
-        project_root = Path.cwd()
+        project_root = resolve_project_root()
 
     # 基础上下文结构
     context = {

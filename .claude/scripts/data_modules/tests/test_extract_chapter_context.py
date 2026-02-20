@@ -147,3 +147,35 @@ def test_render_text_contains_writing_guidance_section(tmp_path):
     assert "### 执行评分" in text
     assert "- 评分: 81.5" in text
     assert "- 复合题材: xuanhuan + realistic" in text
+
+
+def test_find_project_root_uses_locator_resolution(monkeypatch, tmp_path):
+    scripts_dir = Path(__file__).resolve().parents[2]
+    if str(scripts_dir) not in sys.path:
+        sys.path.insert(0, str(scripts_dir))
+
+    from extract_chapter_context import find_project_root
+
+    project_root = tmp_path / "novel_x"
+    (project_root / ".webnovel").mkdir(parents=True, exist_ok=True)
+    (project_root / ".webnovel" / "state.json").write_text("{}", encoding="utf-8")
+    monkeypatch.setenv("WEBNOVEL_PROJECT_ROOT", str(project_root))
+
+    resolved = find_project_root(tmp_path / "anywhere")
+    assert resolved == project_root.resolve()
+
+
+def test_fallback_context_defaults_to_resolved_project_root(monkeypatch, tmp_path):
+    scripts_dir = Path(__file__).resolve().parents[2]
+    if str(scripts_dir) not in sys.path:
+        sys.path.insert(0, str(scripts_dir))
+
+    from fallback_chapter_context import create_fallback_chapter_context
+
+    project_root = tmp_path / "novel_y"
+    (project_root / ".webnovel").mkdir(parents=True, exist_ok=True)
+    (project_root / ".webnovel" / "state.json").write_text("{}", encoding="utf-8")
+    monkeypatch.setenv("WEBNOVEL_PROJECT_ROOT", str(project_root))
+
+    context = create_fallback_chapter_context(7)
+    assert context["project_root"] == str(project_root.resolve())
