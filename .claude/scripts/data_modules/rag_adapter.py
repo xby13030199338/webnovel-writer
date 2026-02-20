@@ -15,6 +15,7 @@ import sqlite3
 import json
 import math
 import logging
+import functools
 import sys
 import os
 from pathlib import Path
@@ -75,6 +76,22 @@ class RAGAdapter:
         status = getattr(embed_client, "last_error_status", None)
         if status == 401:
             self._degraded_mode_reason = "embedding_auth_failed"
+
+    async def _to_thread_compat(self, func, /, *args, **kwargs):
+        """
+        Python 3.8 兼容版 to_thread：
+        - Py3.9+ 优先使用 asyncio.to_thread
+        - Py3.8 回退到 run_in_executor
+        """
+        to_thread = getattr(asyncio, "to_thread", None)
+        if callable(to_thread):
+            return await to_thread(func, *args, **kwargs)
+
+        loop = asyncio.get_running_loop()
+        if kwargs:
+            call = functools.partial(func, *args, **kwargs)
+            return await loop.run_in_executor(None, call)
+        return await loop.run_in_executor(None, func, *args)
 
     def _init_db(self):
         """初始化向量数据库"""
@@ -637,14 +654,14 @@ class RAGAdapter:
         start_time = time.perf_counter()
 
         # 小规模：全表向量扫描（召回更稳）；大规模：预筛选避免 O(n) 扫描拖慢
-        vectors_count = await asyncio.to_thread(self._get_vectors_count)
+        vectors_count = await self._to_thread_compat(self._get_vectors_count)
         use_full_scan = vectors_count <= int(self.config.vector_full_scan_max_vectors)
 
         if use_full_scan:
             # 并行执行向量和 BM25 检索
             vector_results, bm25_results = await asyncio.gather(
                 self.vector_search(query, vector_top_k, chunk_type=chunk_type, log_query=False),
-                asyncio.to_thread(self.bm25_search, query, bm25_top_k, 1.5, 0.75, chunk_type, False),
+                self._to_thread_compat(self.bm25_search, query, bm25_top_k, 1.5, 0.75, chunk_type, False),
             )
         else:
             bm25_candidates = max(
@@ -659,8 +676,8 @@ class RAGAdapter:
                 int(rerank_top_n) * 10,
             )
 
-            bm25_task = asyncio.to_thread(self.bm25_search, query, bm25_candidates, 1.5, 0.75, chunk_type, False)
-            recent_task = asyncio.to_thread(self._get_recent_chunk_ids, recent_candidates, chunk_type)
+            bm25_task = self._to_thread_compat(self.bm25_search, query, bm25_candidates, 1.5, 0.75, chunk_type, False)
+            recent_task = self._to_thread_compat(self._get_recent_chunk_ids, recent_candidates, chunk_type)
             embed_task = self.api_client.embed([query])
 
             bm25_candidates_results, recent_ids, query_embeddings = await asyncio.gather(
@@ -678,10 +695,10 @@ class RAGAdapter:
             candidate_ids = {r.chunk_id for r in bm25_candidates_results}
             candidate_ids.update(recent_ids)
 
-            rows = await asyncio.to_thread(self._fetch_vectors_by_chunk_ids, list(candidate_ids))
+            rows = await self._to_thread_compat(self._fetch_vectors_by_chunk_ids, list(candidate_ids))
             if chunk_type:
                 rows = [r for r in rows if len(r) > 6 and r[6] == chunk_type]
-            vector_results = await asyncio.to_thread(
+            vector_results = await self._to_thread_compat(
                 self._vector_search_rows,
                 query_embedding,
                 rows,
