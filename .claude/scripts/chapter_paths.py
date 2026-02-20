@@ -61,18 +61,31 @@ def parse_chapter_titles(project_root: Path, volume_num: int) -> Dict[int, str]:
     """
     chapter_titles = {}
 
-    # 尝试从分卷大纲中解析
-    volume_outline_path = project_root / "大纲" / f"第{volume_num}卷.md"
-    if volume_outline_path.exists():
+    # 尝试从分卷大纲中解析（优先匹配当前标准命名）
+    outline_dir = project_root / "大纲"
+    volume_outline_candidates = [
+        outline_dir / f"第{volume_num}卷-详细大纲.md",  # 当前标准格式
+        outline_dir / f"第{volume_num}卷 详细大纲.md",  # 兼容空格分隔
+        outline_dir / f"第{volume_num}卷详细大纲.md",   # 兼容无分隔符
+        outline_dir / f"第{volume_num}卷.md",          # 兼容旧格式
+    ]
+
+    chapter_pattern = re.compile(
+        r"^#{2,3}\s*第\s*(\d+)\s*章(?:\s*[：:]\s*|\s+)(.+?)\s*$",
+        re.MULTILINE,
+    )
+
+    for volume_outline_path in volume_outline_candidates:
+        if not volume_outline_path.exists():
+            continue
+
         try:
             content = volume_outline_path.read_text(encoding='utf-8')
-            # 匹配章节标题格式：## 第X章：标题 或 ### 第X章 标题
-            chapter_pattern = re.compile(r"^#{2,3}\s*第(\d+)章[：:]\s*(.+?)$", re.MULTILINE)
             matches = chapter_pattern.findall(content)
             for match in matches:
                 chapter_num = int(match[0])
                 chapter_title = match[1].strip()
-                if chapter_title:
+                if chapter_title and chapter_num not in chapter_titles:
                     chapter_titles[chapter_num] = chapter_title
         except Exception:
             pass
@@ -220,4 +233,3 @@ def get_volume_info(project_root: Path, chapter_num: int) -> Dict[str, Any]:
         "volume_name": volume_names.get(vol_num, ""),
         "chapter_title": chapter_titles.get(chapter_num, "")
     }
-
