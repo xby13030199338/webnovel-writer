@@ -19,7 +19,10 @@ import sys
 import argparse
 from pathlib import Path
 
-import requests
+try:
+    import requests
+except ImportError:
+    requests = None
 
 
 # ─── .env 读写 ────────────────────────────────────────────────────────────────
@@ -65,6 +68,12 @@ def save_env(env_path: Path, updates: dict):
 
 def test_embed(base_url: str, api_key: str, model: str):
     """返回 (ok: bool, message: str)"""
+    if requests is None:
+        return False, (
+            "缺少 requests 依赖，请先安装："
+            "pip install -r .claude/scripts/requirements.txt"
+        )
+
     url = base_url.rstrip("/")
     if not url.endswith("/embeddings"):
         url = url + ("/embeddings" if url.endswith("/v1") else "/v1/embeddings")
@@ -95,6 +104,12 @@ def test_embed(base_url: str, api_key: str, model: str):
 
 def test_rerank(base_url: str, api_key: str, model: str):
     """返回 (ok: bool, message: str)"""
+    if requests is None:
+        return False, (
+            "缺少 requests 依赖，请先安装："
+            "pip install -r .claude/scripts/requirements.txt"
+        )
+
     url = base_url.rstrip("/")
     if not url.endswith("/rerank"):
         url = url + ("/rerank" if url.endswith("/v1") else "/v1/rerank")
